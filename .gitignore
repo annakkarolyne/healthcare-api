@@ -28,3 +28,5 @@ out/
 
 ### Env ###
 .env
+update_senha.sql
+log_erro.txt
