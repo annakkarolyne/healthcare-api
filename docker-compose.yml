@@ -1,0 +1,35 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: healthcare-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: healthcare_db
+      POSTGRES_USER: healthcare_user
+      POSTGRES_PASSWORD: healthcare_pass
+    ports:
+      - "5433:5432"
+    volumes:
+      - healthcare_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U healthcare_user -d healthcare_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build: .
+    container_name: healthcare-api
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/healthcare_db
+      SPRING_DATASOURCE_USERNAME: healthcare_user
+      SPRING_DATASOURCE_PASSWORD: healthcare_pass
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  healthcare_pg_data:
