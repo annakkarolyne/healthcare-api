@@ -42,18 +42,3 @@ src/main/java/com/healthcare/api/
    (se preferir usar o Maven Wrapper, rode `mvn -N io.takari:maven:wrapper` uma vez para gerá-lo)
 
 3. A API sobe em `http://localhost:8080`.
-
-> Ainda não há endpoints nem tabelas — isso vem nas próximas partes (entidades + Flyway, depois segurança JWT).
-
-## Próximos passos
-
-- [ ] Parte 2: Entidades + migrations Flyway
-- [ ] Parte 3: Segurança (JWT)
-- [ ] Parte 4: CRUD de Usuário
-- [ ] Parte 5: Paciente e Médico
-- [ ] Parte 6: Consulta
-- [ ] Parte 7: Prontuário
-- [ ] Parte 8: Financeiro
-- [ ] Parte 9: Testes
-- [ ] Parte 10: Swagger, exceptions globais, extras
-- [ ] Parte 11: Docker final + README completo
