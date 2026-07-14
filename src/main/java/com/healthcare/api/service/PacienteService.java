@@ -76,6 +76,10 @@ public class PacienteService {
     }
 
     private void validarResponsavelSeMenor(PacienteRequestDTO dto) {
+        if (dto.getNascimento() == null) {
+            throw new IllegalArgumentException("Data de nascimento é obrigatória");
+        }
+
         boolean menorDeIdade = dto.getNascimento().plusYears(18).isAfter(java.time.LocalDate.now());
         if (menorDeIdade && (dto.getResponsavelNome() == null || dto.getResponsavelNome().isBlank())) {
             throw new IllegalArgumentException("Paciente menor de idade precisa de responsável");
