@@ -1,13 +1,10 @@
 package com.healthcare.api.service;
 
-import com.healthcare.api.dto.MedicoRequestDTO;
-import com.healthcare.api.dto.MedicoResponseDTO;
-import com.healthcare.api.entity.Consulta;
-import com.healthcare.api.entity.Medico;
+import com.healthcare.api.dto.PacienteRequestDTO;
+import com.healthcare.api.dto.PacienteResponseDTO;
+import com.healthcare.api.entity.Paciente;
 import com.healthcare.api.exception.RecursoNaoEncontradoException;
-import com.healthcare.api.repository.ConsultaRepository;
-import com.healthcare.api.repository.MedicoRepository;
-import com.healthcare.api.repository.UsuarioRepository;
+import com.healthcare.api.repository.PacienteRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,109 +14,149 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class MedicoServiceTest {
+class PacienteServiceTest {
 
     @Mock
-    private MedicoRepository medicoRepository;
-
-    @Mock
-    private ConsultaRepository consultaRepository;
-
-    @Mock
-    private UsuarioRepository usuarioRepository;
+    private PacienteRepository pacienteRepository;
 
     @InjectMocks
-    private MedicoService medicoService;
+    private PacienteService pacienteService;
 
-    private Medico medico;
+    private Paciente paciente;
 
     @BeforeEach
     void setUp() {
-        medico = Medico.builder()
+        paciente = Paciente.builder()
                 .id(1L)
-                .nome("Dra. Ana Souza")
-                .crm("123456-SP")
-                .especialidade("Cardiologia")
-                .telefone("11999999999")
+                .nome("João Silva")
+                .cpf("12345678900")
+                .nascimento(LocalDate.now().minusYears(30))
+                .telefone("11988887777")
+                .endereco("Rua das Flores, 123")
                 .ativo(true)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .build();
     }
 
-    @Test
-    void deveCriarMedicoComSucessoQuandoCrmNaoExiste() {
-        MedicoRequestDTO dto = new MedicoRequestDTO();
-        dto.setNome("Dra. Ana Souza");
-        dto.setCrm("123456-SP");
-        dto.setEspecialidade("Cardiologia");
-        dto.setTelefone("11999999999");
-
-        when(medicoRepository.existsByCrm(dto.getCrm())).thenReturn(false);
-        when(medicoRepository.save(any(Medico.class))).thenReturn(medico);
-
-        MedicoResponseDTO response = medicoService.criar(dto);
-
-        assertThat(response.getNome()).isEqualTo("Dra. Ana Souza");
-        assertThat(response.getCrm()).isEqualTo("123456-SP");
-        verify(medicoRepository).save(any(Medico.class));
+    private PacienteRequestDTO criarDtoAdulto() {
+        PacienteRequestDTO dto = new PacienteRequestDTO();
+        dto.setNome("João Silva");
+        dto.setCpf("12345678900");
+        dto.setNascimento(LocalDate.now().minusYears(30));
+        dto.setTelefone("11988887777");
+        dto.setEndereco("Rua das Flores, 123");
+        return dto;
     }
 
     @Test
-    void deveLancarExcecaoAoCriarMedicoComCrmJaExistente() {
-        MedicoRequestDTO dto = new MedicoRequestDTO();
-        dto.setCrm("123456-SP");
+    void deveCriarPacienteAdultoComSucesso() {
+        PacienteRequestDTO dto = criarDtoAdulto();
 
-        when(medicoRepository.existsByCrm(dto.getCrm())).thenReturn(true);
+        when(pacienteRepository.existsByCpf(dto.getCpf())).thenReturn(false);
+        when(pacienteRepository.save(any(Paciente.class))).thenReturn(paciente);
 
-        assertThatThrownBy(() -> medicoService.criar(dto))
+        PacienteResponseDTO response = pacienteService.criar(dto);
+
+        assertThat(response.getNome()).isEqualTo("João Silva");
+        assertThat(response.getCpf()).isEqualTo("12345678900");
+        verify(pacienteRepository).save(any(Paciente.class));
+    }
+
+    @Test
+    void deveLancarExcecaoAoCriarPacienteComCpfJaExistente() {
+        PacienteRequestDTO dto = criarDtoAdulto();
+
+        when(pacienteRepository.existsByCpf(dto.getCpf())).thenReturn(true);
+
+        assertThatThrownBy(() -> pacienteService.criar(dto))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Já existe um médico cadastrado com esse CRM");
+                .hasMessage("Já existe um paciente cadastrado com esse CPF");
 
-        verify(medicoRepository, never()).save(any(Medico.class));
+        verify(pacienteRepository, never()).save(any(Paciente.class));
     }
 
     @Test
-    void deveLancarExcecaoAoBuscarMedicoInexistente() {
-        when(medicoRepository.findById(99L)).thenReturn(java.util.Optional.empty());
+    void deveLancarExcecaoAoCriarPacienteMenorDeIdadeSemResponsavel() {
+        PacienteRequestDTO dto = criarDtoAdulto();
+        dto.setNascimento(LocalDate.now().minusYears(10));
+        dto.setResponsavelNome(null);
 
-        assertThatThrownBy(() -> medicoService.buscarPorId(99L))
+        when(pacienteRepository.existsByCpf(dto.getCpf())).thenReturn(false);
+
+        assertThatThrownBy(() -> pacienteService.criar(dto))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Paciente menor de idade precisa de responsável");
+
+        verify(pacienteRepository, never()).save(any(Paciente.class));
+    }
+
+    @Test
+    void deveCriarPacienteMenorDeIdadeComResponsavelComSucesso() {
+        PacienteRequestDTO dto = criarDtoAdulto();
+        dto.setNascimento(LocalDate.now().minusYears(10));
+        dto.setResponsavelNome("Maria Silva");
+        dto.setResponsavelCpf("98765432100");
+        dto.setResponsavelTelefone("11977776666");
+
+        Paciente menorSalvo = Paciente.builder()
+                .id(2L)
+                .nome(dto.getNome())
+                .cpf(dto.getCpf())
+                .nascimento(dto.getNascimento())
+                .responsavelNome(dto.getResponsavelNome())
+                .ativo(true)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
+
+        when(pacienteRepository.existsByCpf(dto.getCpf())).thenReturn(false);
+        when(pacienteRepository.save(any(Paciente.class))).thenReturn(menorSalvo);
+
+        PacienteResponseDTO response = pacienteService.criar(dto);
+
+        assertThat(response.getResponsavelNome()).isEqualTo("Maria Silva");
+        verify(pacienteRepository).save(any(Paciente.class));
+    }
+
+    @Test
+    void deveLancarExcecaoAoCriarPacienteComNascimentoNulo() {
+        PacienteRequestDTO dto = criarDtoAdulto();
+        dto.setNascimento(null);
+
+        when(pacienteRepository.existsByCpf(dto.getCpf())).thenReturn(false);
+
+        assertThatThrownBy(() -> pacienteService.criar(dto))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Data de nascimento é obrigatória");
+
+        verify(pacienteRepository, never()).save(any(Paciente.class));
+    }
+
+    @Test
+    void deveLancarExcecaoAoBuscarPacienteInexistente() {
+        when(pacienteRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> pacienteService.buscarPorId(99L))
                 .isInstanceOf(RecursoNaoEncontradoException.class)
-                .hasMessage("Médico não encontrado");
+                .hasMessage("Paciente não encontrado");
     }
 
     @Test
-    void deveExcluirMedicoQuandoNaoHaConsultaFutura() {
-        when(medicoRepository.findById(1L)).thenReturn(java.util.Optional.of(medico));
-        when(consultaRepository.existsByMedicoIdAndDataGreaterThanEqualAndStatusNot(
-                eq(1L), any(LocalDate.class), eq(Consulta.Status.CANCELADA)))
-                .thenReturn(false);
+    void deveExcluirPacienteComSucesso() {
+        when(pacienteRepository.findById(1L)).thenReturn(Optional.of(paciente));
 
-        medicoService.excluir(1L);
+        pacienteService.excluir(1L);
 
-        assertThat(medico.getAtivo()).isFalse();
-        verify(medicoRepository).save(medico);
-    }
-
-    @Test
-    void deveLancarExcecaoAoExcluirMedicoComConsultaFutura() {
-        when(medicoRepository.findById(1L)).thenReturn(java.util.Optional.of(medico));
-        when(consultaRepository.existsByMedicoIdAndDataGreaterThanEqualAndStatusNot(
-                eq(1L), any(LocalDate.class), eq(Consulta.Status.CANCELADA)))
-                .thenReturn(true);
-
-        assertThatThrownBy(() -> medicoService.excluir(1L))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Não é possível excluir médico com consulta futura agendada");
-
-        verify(medicoRepository, never()).save(any(Medico.class));
+        assertThat(paciente.getAtivo()).isFalse();
+        verify(pacienteRepository).save(paciente);
     }
 }
