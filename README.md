@@ -190,6 +190,6 @@ http://localhost:8080/swagger-ui.html
 
 ## 👩‍💻 Autora
 
-Desenvolvido por **Ana Karolyne**, como projeto de portfólio para demonstrar domínio de Java, Spring Boot, Spring Security, arquitetura em camadas e boas práticas de desenvolvimento backend.
+Desenvolvido por **Ana Caroline**, como projeto de portfólio para demonstrar domínio de Java, Spring Boot, Spring Security, arquitetura em camadas e boas práticas de desenvolvimento backend.
 
 🔗 [github.com/annakkarolyne](https://github.com/annakkarolyne)
