@@ -7,6 +7,8 @@ import com.healthcare.api.exception.RecursoNaoEncontradoException;
 import com.healthcare.api.repository.PacienteRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.Period;
 import java.util.List;
 
 @Service
@@ -34,7 +36,15 @@ public class PacienteService {
             throw new IllegalArgumentException("Já existe um paciente cadastrado com esse CPF");
         }
 
-        validarResponsavelSeMenor(dto);
+        if (dto.getNascimento() == null) {
+            throw new IllegalArgumentException("Data de nascimento é obrigatória");
+        }
+
+        int idade = Period.between(dto.getNascimento(), LocalDate.now()).getYears();
+
+        if (idade < 18 && dto.getResponsavelNome() == null) {
+            throw new IllegalArgumentException("Paciente menor de idade precisa de responsável");
+        }
 
         Paciente paciente = Paciente.builder()
                 .nome(dto.getNome())
@@ -55,10 +65,7 @@ public class PacienteService {
     public PacienteResponseDTO atualizar(Long id, PacienteRequestDTO dto) {
         Paciente paciente = buscarEntidadePorId(id);
 
-        validarResponsavelSeMenor(dto);
-
         paciente.setNome(dto.getNome());
-        paciente.setNascimento(dto.getNascimento());
         paciente.setTelefone(dto.getTelefone());
         paciente.setEndereco(dto.getEndereco());
         paciente.setResponsavelNome(dto.getResponsavelNome());
@@ -75,17 +82,6 @@ public class PacienteService {
         pacienteRepository.save(paciente);
     }
 
-    private void validarResponsavelSeMenor(PacienteRequestDTO dto) {
-        if (dto.getNascimento() == null) {
-            throw new IllegalArgumentException("Data de nascimento é obrigatória");
-        }
-
-        boolean menorDeIdade = dto.getNascimento().plusYears(18).isAfter(java.time.LocalDate.now());
-        if (menorDeIdade && (dto.getResponsavelNome() == null || dto.getResponsavelNome().isBlank())) {
-            throw new IllegalArgumentException("Paciente menor de idade precisa de responsável");
-        }
-    }
-
     private Paciente buscarEntidadePorId(Long id) {
         return pacienteRepository.findById(id)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Paciente não encontrado"));
@@ -94,8 +90,8 @@ public class PacienteService {
     private PacienteResponseDTO toResponseDTO(Paciente p) {
         return new PacienteResponseDTO(
                 p.getId(), p.getNome(), p.getCpf(), p.getNascimento(),
-                p.getTelefone(), p.getEndereco(),
-                p.getResponsavelNome(), p.getResponsavelCpf(), p.getResponsavelTelefone(),
+                p.getTelefone(), p.getEndereco(), p.getResponsavelNome(),
+                p.getResponsavelCpf(), p.getResponsavelTelefone(),
                 p.getAtivo(), p.getCreatedAt(), p.getUpdatedAt()
         );
     }

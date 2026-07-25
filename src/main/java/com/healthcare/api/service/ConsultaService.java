@@ -5,6 +5,7 @@ import com.healthcare.api.dto.ConsultaResponseDTO;
 import com.healthcare.api.entity.Consulta;
 import com.healthcare.api.entity.Medico;
 import com.healthcare.api.entity.Paciente;
+import com.healthcare.api.exception.HorarioIndisponivelException;
 import com.healthcare.api.exception.RecursoNaoEncontradoException;
 import com.healthcare.api.repository.ConsultaRepository;
 import com.healthcare.api.repository.MedicoRepository;
@@ -40,20 +41,10 @@ public class ConsultaService {
     }
 
     public ConsultaResponseDTO agendar(ConsultaRequestDTO dto) {
-        Paciente paciente = pacienteRepository.findById(dto.getPacienteId())
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Paciente não encontrado"));
+        Paciente paciente = buscarPacientePorId(dto.getPacienteId());
+        Medico medico = buscarMedicoPorId(dto.getMedicoId());
 
-        Medico medico = medicoRepository.findById(dto.getMedicoId())
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Médico não encontrado"));
-
-        boolean horarioOcupado = consultaRepository
-                .existsByMedicoIdAndDataAndHoraAndStatusNot(
-                        dto.getMedicoId(), dto.getData(), dto.getHora(), Consulta.Status.CANCELADA
-                );
-
-        if (horarioOcupado) {
-            throw new IllegalArgumentException("Médico já possui consulta agendada nesse horário");
-        }
+        validarHorarioDisponivel(dto.getMedicoId(), dto);
 
         Consulta consulta = Consulta.builder()
                 .paciente(paciente)
@@ -77,14 +68,7 @@ public class ConsultaService {
     public ConsultaResponseDTO remarcar(Long id, ConsultaRequestDTO dto) {
         Consulta consulta = buscarEntidadePorId(id);
 
-        boolean horarioOcupado = consultaRepository
-                .existsByMedicoIdAndDataAndHoraAndStatusNot(
-                        dto.getMedicoId(), dto.getData(), dto.getHora(), Consulta.Status.CANCELADA
-                );
-
-        if (horarioOcupado) {
-            throw new IllegalArgumentException("Médico já possui consulta agendada nesse horário");
-        }
+        validarHorarioDisponivelParaRemarcacao(id, dto);
 
         consulta.setData(dto.getData());
         consulta.setHora(dto.getHora());
@@ -92,6 +76,38 @@ public class ConsultaService {
 
         Consulta atualizada = consultaRepository.save(consulta);
         return toResponseDTO(atualizada);
+    }
+
+    // ---- Métodos auxiliares privados ----
+
+    private void validarHorarioDisponivel(Long medicoId, ConsultaRequestDTO dto) {
+        boolean horarioOcupado = consultaRepository.existsByMedicoIdAndDataAndHoraAndStatusNot(
+                medicoId, dto.getData(), dto.getHora(), Consulta.Status.CANCELADA
+        );
+
+        if (horarioOcupado) {
+            throw new HorarioIndisponivelException("Médico já possui consulta agendada nesse horário");
+        }
+    }
+
+    private void validarHorarioDisponivelParaRemarcacao(Long consultaId, ConsultaRequestDTO dto) {
+        boolean horarioOcupado = consultaRepository.existsByMedicoIdAndDataAndHoraAndStatusNotAndIdNot(
+                dto.getMedicoId(), dto.getData(), dto.getHora(), Consulta.Status.CANCELADA, consultaId
+        );
+
+        if (horarioOcupado) {
+            throw new HorarioIndisponivelException("Médico já possui consulta agendada nesse horário");
+        }
+    }
+
+    private Paciente buscarPacientePorId(Long id) {
+        return pacienteRepository.findById(id)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Paciente não encontrado"));
+    }
+
+    private Medico buscarMedicoPorId(Long id) {
+        return medicoRepository.findById(id)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Médico não encontrado"));
     }
 
     private Consulta buscarEntidadePorId(Long id) {
