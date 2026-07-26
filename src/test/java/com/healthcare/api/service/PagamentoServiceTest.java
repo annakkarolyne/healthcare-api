@@ -77,7 +77,7 @@ class PagamentoServiceTest {
                 .id(1L)
                 .consulta(consultaAgendada)
                 .valor(BigDecimal.valueOf(150))
-                .formaPagamento("PIX")
+                .formaPagamento(Pagamento.FormaPagamento.PIX)
                 .pago(true)
                 .dataPagamento(LocalDateTime.now())
                 .createdAt(LocalDateTime.now())
@@ -89,7 +89,7 @@ class PagamentoServiceTest {
         PagamentoRequestDTO dto = new PagamentoRequestDTO();
         dto.setConsultaId(consultaId);
         dto.setValor(BigDecimal.valueOf(150));
-        dto.setFormaPagamento("PIX");
+        dto.setFormaPagamento(Pagamento.FormaPagamento.PIX);
         return dto;
     }
 
