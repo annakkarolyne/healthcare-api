@@ -9,6 +9,10 @@ Sistema de gestão para clínica médica — API REST desenvolvida em **Java + S
 ![JWT](https://img.shields.io/badge/Auth-JWT-black?logo=jsonwebtokens)
 ![Status](https://img.shields.io/badge/Status-Em%20desenvolvimento-yellow)
 
+**🔗 [Acesse o projeto em produção](https://healthcare-api-iv3z.onrender.com)** &nbsp;|&nbsp; **📖 [Documentação Swagger](https://healthcare-api-iv3z.onrender.com/swagger-ui.html)**
+
+> ⚠️ O deploy está em uma instância gratuita do Render — a primeira requisição pode levar até 1 minuto para "acordar" o servidor.
+
 ---
 
 ## 📌 Sobre o projeto
@@ -17,7 +21,17 @@ A **HealthCare API** simula o backend de uma clínica médica real. Ela permite 
 
 O projeto foi construído com foco em **arquitetura em camadas**, **regras de negócio bem definidas** e **boas práticas de desenvolvimento backend com Spring**.
 
-> 🚧 Projeto em desenvolvimento ativo. Módulos de médicos, pacientes, consultas e pagamentos já estão implementados e testados. Veja a seção [Roadmap](#-roadmap) para o que vem a seguir.
+> 🚧 Projeto em desenvolvimento ativo. Módulos de médicos, pacientes, consultas e pagamentos já estão implementados e testados. Veja a seção [Roadmap](#️-roadmap) para o que vem a seguir.
+
+---
+
+## 📸 Capturas de tela
+
+### Tela de login
+![Tela de login](docs/screenshots/tela-login.png)
+
+### Painel administrativo
+![Dashboard](docs/screenshots/dashboard.png)
 
 ---
 
@@ -31,14 +45,7 @@ O projeto foi construído com foco em **arquitetura em camadas**, **regras de ne
 - [Endpoints principais](#-endpoints-principais)
 - [Como executar](#-como-executar)
 - [Documentação (Swagger)](#-documentação-swagger)
-- ## 📸 Capturas de tela
-
-### Tela de login
-![Tela de login](docs/screenshots/tela-login.png)
-
-### Painel administrativo
-![Dashboard](docs/screenshots/dashboard.png)
-- [Roadmap](#-roadmap)
+- [Roadmap](#️-roadmap)
 - [Autora](#-autora)
 
 ---
@@ -54,6 +61,7 @@ O projeto foi construído com foco em **arquitetura em camadas**, **regras de ne
 | ORM | JPA / Hibernate |
 | Containerização | Docker & Docker Compose |
 | Documentação | Swagger / OpenAPI |
+| Deploy | Render |
 
 ---
 
@@ -61,20 +69,18 @@ O projeto foi construído com foco em **arquitetura em camadas**, **regras de ne
 
 O projeto segue uma arquitetura em camadas, separando responsabilidades de forma clara:
 
-```
 src/main/java/com/healthcare/api/
-├── controller     # endpoints REST
-├── service        # regras de negócio
-├── repository     # acesso a dados (Spring Data JPA)
-├── entity         # entidades JPA (tabelas)
-├── dto            # objetos de transferência de dados
-├── mapper         # conversão entity <-> dto
-├── config         # configurações gerais (Swagger, CORS, etc)
-├── security       # JWT, filtros, roles
-├── exception      # tratamento global de exceções
-├── validation     # validações customizadas
-└── util           # utilitários
-```
+├── controller # endpoints REST
+├── service # regras de negócio
+├── repository # acesso a dados (Spring Data JPA)
+├── entity # entidades JPA (tabelas)
+├── dto # objetos de transferência de dados
+├── mapper # conversão entity <-> dto
+├── config # configurações gerais (Swagger, CORS, etc)
+├── security # JWT, filtros, roles
+├── exception # tratamento global de exceções
+├── validation # validações customizadas
+└── util # utilitários
 
 ---
 
@@ -120,36 +126,25 @@ Toda a autorização é feita via **JWT**, validado em cada requisição por end
 ## 📋 Endpoints principais
 
 ### Médicos
-```
-GET    /medicos
-POST   /medicos
-PUT    /medicos/{id}
+GET /medicos
+POST /medicos
+PUT /medicos/{id}
 DELETE /medicos/{id}
-```
 
 ### Pacientes
-```
-GET    /pacientes
-POST   /pacientes
-```
+GET /pacientes
+POST /pacientes
 
 ### Consultas
-```
-POST   /consultas
-PUT    /consultas/{id}/remarcar
-PUT    /consultas/{id}/cancelar
-```
+POST /consultas
+PUT /consultas/{id}/remarcar
+PUT /consultas/{id}/cancelar
 
 ### Financeiro
-```
-POST   /pagamentos
-GET    /pagamentos/relatorio?ano={ano}&mes={mes}
-```
+POST /pagamentos
+GET /pagamentos/relatorio?ano={ano}&mes={mes}
 
 Todos os endpoints protegidos exigem o header:
-```
-Authorization: Bearer {token}
-```
 
 ---
 
@@ -173,11 +168,7 @@ A API estará disponível em `http://localhost:8080`.
 ## 📖 Documentação (Swagger)
 
 Com a aplicação rodando, acesse a documentação interativa da API em:
-
-```
 http://localhost:8080/swagger-ui.html
-```
-
 ---
 
 ## 🗺️ Roadmap
@@ -189,9 +180,9 @@ http://localhost:8080/swagger-ui.html
 - [x] Autenticação JWT e controle por perfil
 - [x] Containerização com Docker
 - [x] Documentação Swagger
+- [x] Deploy em nuvem (Render)
 - [ ] Módulo de prontuário médico
 - [ ] Testes automatizados (JUnit + Mockito)
-- [ ] Deploy em nuvem (Render/Railway)
 
 ---
 
