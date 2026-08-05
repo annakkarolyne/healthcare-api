@@ -25,13 +25,18 @@ public class SecurityConfig {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     }
 
-    @Bean
+@Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
+                               "/",
+                               "/error",
+                                "/index.html",
+                                "/clinica-recepcao.png",
+                                "/img/**",
                                 "/login",
                                 "/usuarios/cadastro",
                                 "/swagger-ui.html",

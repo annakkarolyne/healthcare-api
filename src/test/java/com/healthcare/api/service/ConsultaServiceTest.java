@@ -199,4 +199,4 @@ class ConsultaServiceTest {
 
         verify(consultaRepository, never()).save(any(Consulta.class));
     }
-}
+}   
