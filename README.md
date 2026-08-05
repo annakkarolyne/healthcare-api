@@ -31,6 +31,13 @@ O projeto foi construído com foco em **arquitetura em camadas**, **regras de ne
 - [Endpoints principais](#-endpoints-principais)
 - [Como executar](#-como-executar)
 - [Documentação (Swagger)](#-documentação-swagger)
+- ## 📸 Capturas de tela
+
+### Tela de login
+![Tela de login](docs/screenshots/tela-login.png)
+
+### Painel administrativo
+![Dashboard](docs/screenshots/dashboard.png)
 - [Roadmap](#-roadmap)
 - [Autora](#-autora)
 
